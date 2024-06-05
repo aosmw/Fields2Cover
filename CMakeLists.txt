@@ -64,10 +64,6 @@ if (WIN32)
   set(CMAKE_SHARED_LIBRARY_PREFIX "")
 endif(WIN32)
 
-include(GNUInstallDirs)
-
-set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
-
 list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules")
 
 include(FetchContent)
@@ -85,17 +81,21 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 FetchContent_Declare(steering_functions FETCHCONTENT_UPDATES_DISCONNECTED
   GIT_REPOSITORY https://github.com/Fields2Cover/steering_functions.git
   GIT_TAG 13e3f5658144b3832fb1eb31a0e2f5a3cbf57db9
+  #CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:PATH=opt/f2c_steering_functions
 )
 FetchContent_Declare(spline FETCHCONTENT_UPDATES_DISCONNECTED
   GIT_REPOSITORY https://github.com/Fields2Cover/spline.git
   GIT_TAG 1b5d4bad29082997076b264de84ca6d46c2ae6ab
+  #CMAKE_ARGS "-DCMAKE_INSTALL_PREFIX:PATH=opt/f2c_spline"
 )
 FetchContent_Declare(matplot FETCHCONTENT_UPDATES_DISCONNECTED
   GIT_REPOSITORY https://github.com/alandefreitas/matplotplusplus
+  #CMAKE_ARGS "-DCMAKE_INSTALL_PREFIX:PATH=opt/f2c_matplot"
 )
 
 FetchContent_Declare(json FETCHCONTENT_UPDATES_DISCONNECTED
   URL https://github.com/nlohmann/json/releases/download/v3.11.3/json.tar.xz
+  #CMAKE_ARGS "-DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}/opt/f2c_json"
 )
 
 FetchContent_MakeAvailable(
@@ -148,20 +148,8 @@ if(USE_ORTOOLS_RELEASE)
   # and then install with IMPORTED_RUNTIME_ARTIFACTS
   # Just brute force install the contents of the directories for now.
   install(
-    DIRECTORY "${ortools_SOURCE_DIR}/share/"
-    DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}"
-  )
-  install(
-    DIRECTORY "${ortools_SOURCE_DIR}/include/"
-    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
-  )
-  install(
-    DIRECTORY "${ortools_SOURCE_DIR}/lib/"
-    DESTINATION "${CMAKE_INSTALL_LIBDIR}"
-  )
-  install(
-    DIRECTORY "${ortools_SOURCE_DIR}/bin/"
-    DESTINATION "${CMAKE_INSTALL_BINDIR}"
+    DIRECTORY "${ortools_SOURCE_DIR}/"
+    DESTINATION "opt/f2c_ortools/"
   )
 elseif(USE_ORTOOLS_FETCH_SRC)
   message(STATUS "or-tools -- Downloading and building from source")
@@ -294,10 +282,10 @@ install(
     matplot
     ${ORTOOLS_TARGET}
   EXPORT Fields2Cover-targets
-  LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
-  ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
-  RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
-  PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+  RUNTIME DESTINATION bin
+  PUBLIC_HEADER DESTINATION include/fields2cover
 )
 
 #https://cmake.org/cmake/help/latest/guide/tutorial/Adding%20Export%20Configuration.html
@@ -310,14 +298,14 @@ write_basic_package_version_file(Fields2CoverConfigVersion.cmake
 install(
   EXPORT Fields2Cover-targets
   FILE Fields2Cover-Targets.cmake
-  DESTINATION "lib/cmake/fields2cover"
+  DESTINATION "share/fields2cover/cmake"
 )
 
 # generate the config file that includes the exports
 configure_package_config_file(
   ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Fields2CoverConfig.cmake.in
   "${CMAKE_CURRENT_BINARY_DIR}/Fields2CoverConfig.cmake"
-  INSTALL_DESTINATION "lib/cmake/fields2cover"
+  INSTALL_DESTINATION "share/fields2cover/cmake"
   NO_SET_AND_CHECK_MACRO
   NO_CHECK_REQUIRED_COMPONENTS_MACRO
 )
@@ -329,12 +317,12 @@ write_basic_package_version_file(
 install(FILES
   ${CMAKE_CURRENT_BINARY_DIR}/Fields2CoverConfig.cmake
   ${CMAKE_CURRENT_BINARY_DIR}/Fields2CoverConfigVersion.cmake
-  DESTINATION "lib/cmake/fields2cover"
+  DESTINATION "share/fields2cover/cmake"
 )
 
 install(
   FILES ${CMAKE_CURRENT_SOURCE_DIR}/package.xml
-  DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/fields2cover
+  DESTINATION share/fields2cover
 )
 
 export(
@@ -350,7 +338,7 @@ export(
 # Copy public headers during `make install`
 install(
   DIRECTORY include/
-  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/fields2cover
+  DESTINATION include/${PROJECT_NAME}
 )
 
 
